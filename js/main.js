@@ -59,10 +59,13 @@ function init() {
 
     window.APP.VIEW.createBalloon.prototype.showPopUp = function () {
         var flag;
+        var balloonEl = $('.balloon');
         if (window.APP.MODEL.CURRENT_WORD.length === window.APP.MODEL.RESULT_WORD.length) {
+            balloonEl.remove();
             if (window.APP.MODEL.CURRENT_WORD === window.APP.MODEL.RESULT_WORD) {
                 flag = confirm('Good Job!, Do you want new word');
                 if (flag) {
+                    window.APP.MODEL.UI_ALPHABET_LIST = [];
                     window.APP.CONTROLLER.fetchNewWork();
                 } else {
                     alert('Thanks for playing!');
@@ -71,6 +74,7 @@ function init() {
             } else {
                 flag = confirm('Opps! Wrong Answer, Want to try again ?');
                 if (flag) {
+                    window.APP.MODEL.UI_ALPHABET_LIST = [];
                     window.APP.CONTROLLER.reTry();
                 } else {
                     answerEle.val(window.APP.MODEL.CURRENT_WORD);
@@ -95,6 +99,10 @@ function init() {
     window.APP.CONTROLLER.fetchNewWork = function () {
         var wordList = window.APP.MODEL.WORD_LIST;
         window.APP.MODEL.RESULT_WORD = '';
+        window.APP.MODEL.ALPHABET_LIST = [];
+        window.APP.MODEL.UI_ALPHABET_LIST = [];
+        window.APP.CONTROLLER.clearUIAlphabetList();
+        removedAlphabetEle.val('');
         var alphaList;
         if (wordList.length > 0) {
             wordList = window.UTIL.shuffle(wordList);
@@ -115,16 +123,15 @@ function init() {
 
     window.APP.CONTROLLER.reTry = function () {
         var currentWord = window.APP.MODEL.CURRENT_WORD;
-
+        removedAlphabetEle.val('');
+        window.APP.CONTROLLER.clearUIAlphabetList();
         window.APP.MODEL.ALPHABET_LIST = currentWord = window.APP.CONTROLLER.wordToShuffleAlphabetArray(currentWord);
 
         window.APP.CONTROLLER.renderWord(currentWord);
         return currentWord;
     };
 
-    window.APP.CONTROLLER.renderWord = function (alphabetList) {
-        window.APP.MODEL.ALPHABET_LIST = alphabetList = window.UTIL.shuffle(alphabetList);
-        window.APP.MODEL.RESULT_WORD = '';
+    window.APP.CONTROLLER.clearUIAlphabetList = function(){
         if (window.APP.MODEL.UI_ALPHABET_LIST.length > 0) {
             var tmp;
             for (var index = 0; index < window.APP.MODEL.UI_ALPHABET_LIST.length; index++) {
@@ -133,13 +140,20 @@ function init() {
             }
         }
         window.APP.MODEL.UI_ALPHABET_LIST = [];
+    };
+
+    window.APP.CONTROLLER.renderWord = function (alphabetList) {
+        window.APP.MODEL.ALPHABET_LIST = alphabetList = window.UTIL.shuffle(alphabetList);
+        window.APP.MODEL.RESULT_WORD = '';
+        window.APP.CONTROLLER.clearUIAlphabetList();
+        window.APP.MODEL.UI_ALPHABET_LIST = [];
         for (var index = 0; index < alphabetList.length; index++) {
             window.APP.MODEL.UI_ALPHABET_LIST.push(new window.APP.VIEW.createBalloon(alphabetList[index]));
         }
     };
 
     window.APP.CONTROLLER.alphabetEnter = function () {
-        var removedAlphabetText = removedAlphabetEle.val();
+        var removedAlphabetText = window.APP.MODEL.RESULT_WORD = removedAlphabetEle.val().toUpperCase();
         var lastAlphabetTyped = removedAlphabetText[removedAlphabetText.length - 1];
         var index;
         for (index = 0; index < window.APP.MODEL.UI_ALPHABET_LIST.length; index++) {
@@ -150,6 +164,7 @@ function init() {
             }
         }
         window.APP.MODEL.UI_ALPHABET_LIST.splice(index, 1);
+        window.APP.VIEW.createBalloon.prototype.showPopUp();
     };
 
     window.APP.CONTROLLER.init();
