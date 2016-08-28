@@ -4,23 +4,13 @@
     <meta charset="UTF-8">
     <title>The Game</title>
     <link rel="stylesheet" href="css/main.css">
+    <script src="js/jquery.min.js"></script>
     <script src="js/main.js"></script>
 </head>
-<body>
-
-<div class="balloon">
-    <span>A</span>
-</div>
-<div class="balloon">
-    <span>A</span>
-</div>
-<div class="balloon">
-    <span>A</span>
-</div>
-
+<body id="mainBody">
 <div class="footer">
-    <input class="input-text" type="text">
-    <input class="input-text" type="text">
+    <input id="removedAlphabet" onkeyup="window.APP.CONTROLLER.alphabetEnter()" class="input-text" type="text">
+    <input id="answer" class="input-text" readonly="true" type="text" value="Answer will appear here.">
 </div>
 </body>
 </html>

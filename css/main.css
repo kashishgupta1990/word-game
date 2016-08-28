@@ -28,6 +28,7 @@ body { margin:20px; background:hsl(70, 31%, 85%); text-align:center; }
     z-index:10;
     animation:balloons 4s ease-in-out infinite;
     transform-origin:bottom center;
+    cursor: pointer;
 }
 .balloon span{
     color: white;
