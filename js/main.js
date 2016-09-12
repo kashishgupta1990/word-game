@@ -4,6 +4,7 @@ window.APP = {
     VIEW: {},
     CONTROLLER: {}
 };
+
 window.UTIL = {
     shuffle: function (array) {
         var currentIndex = array.length, temporaryValue, randomIndex;
@@ -58,7 +59,7 @@ function init() {
     };
 
     window.APP.VIEW.createBalloon.prototype.showPopUp = function () {
-        var flag;
+        var flag,flag2;
         var balloonEl = $('.balloon');
         if (window.APP.MODEL.CURRENT_WORD.length === window.APP.MODEL.RESULT_WORD.length) {
             balloonEl.remove();
@@ -66,10 +67,13 @@ function init() {
                 flag = confirm('Good Job!, Do you want new word');
                 if (flag) {
                     window.APP.MODEL.UI_ALPHABET_LIST = [];
-                    window.APP.CONTROLLER.fetchNewWork();
+                    flag2 = window.APP.CONTROLLER.fetchNewWork();
+                    if(!flag2){
+                        alert('Thanks for playing!, Words are finished');
+                    }
                 } else {
                     alert('Thanks for playing!');
-                    window.APP.CONTROLLER.init();
+                    //window.APP.CONTROLLER.init();
                 }
             } else {
                 flag = confirm('Opps! Wrong Answer, Want to try again ?');
@@ -87,7 +91,6 @@ function init() {
     window.APP.CONTROLLER.init = function () {
 
         // MODEL
-        window.APP.MODEL.WORD_LIST = ['AMAN', 'KASHISH', 'SHUBHAM', 'REENA'];
         window.APP.MODEL.CURRENT_WORD = '';
         window.APP.MODEL.RESULT_WORD = '';
         window.APP.MODEL.ALPHABET_LIST = [];
@@ -167,5 +170,12 @@ function init() {
         window.APP.VIEW.createBalloon.prototype.showPopUp();
     };
 
-    window.APP.CONTROLLER.init();
+    // Loading JSON
+    $.getJSON('js/words.json',function(words){
+        window.APP.MODEL.WORD_LIST = words.words;
+
+        window.APP.CONTROLLER.init();
+    });
+
 }
+
