@@ -23,6 +23,16 @@ window.UTIL = {
         }
 
         return array;
+    },
+    wordCount: function (word) {
+        var obj = {};
+        for (var i = 0; i < word.length; i++) {
+            if (!obj[word[i]]) {
+                obj[word[i]] = 0;
+            }
+            obj[word[i]]++;
+        }
+        return obj;
     }
 };
 
@@ -31,6 +41,7 @@ jQuery(document).ready(init);
 function init() {
     var removedAlphabetEle = $('#removedAlphabet');
     var answerEle = $('#answer');
+    var txtRemovedAlphabet = document.getElementById('removedAlphabet');
 
     // VIEW Methods
     window.APP.VIEW.createBalloon = function (alphabet) {
@@ -59,7 +70,7 @@ function init() {
     };
 
     window.APP.VIEW.createBalloon.prototype.showPopUp = function () {
-        var flag,flag2;
+        var flag, flag2;
         var balloonEl = $('.balloon');
         if (window.APP.MODEL.CURRENT_WORD.length === window.APP.MODEL.RESULT_WORD.length) {
             balloonEl.remove();
@@ -68,7 +79,7 @@ function init() {
                 if (flag) {
                     window.APP.MODEL.UI_ALPHABET_LIST = [];
                     flag2 = window.APP.CONTROLLER.fetchNewWork();
-                    if(!flag2){
+                    if (!flag2) {
                         alert('Thanks for playing!, Words are finished');
                     }
                 } else {
@@ -134,7 +145,7 @@ function init() {
         return currentWord;
     };
 
-    window.APP.CONTROLLER.clearUIAlphabetList = function(){
+    window.APP.CONTROLLER.clearUIAlphabetList = function () {
         if (window.APP.MODEL.UI_ALPHABET_LIST.length > 0) {
             var tmp;
             for (var index = 0; index < window.APP.MODEL.UI_ALPHABET_LIST.length; index++) {
@@ -155,12 +166,27 @@ function init() {
         }
     };
 
-    window.APP.CONTROLLER.alphabetEnter = function () {
+    window.APP.CONTROLLER.alphabetEnter = function (event) {
+
+        // Ignore back button press effect
+        if (event.keyCode === 8 || event.keyCode === 46) {
+            return;
+        }
+
+        var secretWord = window.APP.MODEL.CURRENT_WORD;
         var removedAlphabetText = window.APP.MODEL.RESULT_WORD = removedAlphabetEle.val().toUpperCase();
         var lastAlphabetTyped = removedAlphabetText[removedAlphabetText.length - 1];
+        var remainingWord = removedAlphabetText.length - 1 > 0 ? removedAlphabetText.substr(0, removedAlphabetText.length - 1) : '';
+
+        // No unwanted word pls :)
+        if (secretWord.indexOf(lastAlphabetTyped) < 0) {
+            removedAlphabetEle.val(remainingWord);
+            return;
+        }
+
         var index;
         for (index = 0; index < window.APP.MODEL.UI_ALPHABET_LIST.length; index++) {
-            if(lastAlphabetTyped.toUpperCase() === window.APP.MODEL.UI_ALPHABET_LIST[index].alphabet.toUpperCase()){
+            if (lastAlphabetTyped.toUpperCase() === window.APP.MODEL.UI_ALPHABET_LIST[index].alphabet.toUpperCase()) {
                 window.APP.MODEL.UI_ALPHABET_LIST[index].remove();
                 window.APP.MODEL.UI_ALPHABET_LIST[index].showPopUp();
                 break;
@@ -169,9 +195,30 @@ function init() {
         window.APP.MODEL.UI_ALPHABET_LIST.splice(index, 1);
         window.APP.VIEW.createBalloon.prototype.showPopUp();
     };
+    txtRemovedAlphabet.addEventListener('keyup', window.APP.CONTROLLER.alphabetEnter);
+
+    window.APP.CONTROLLER.alphabetBeforeEnter = function (event) {
+        if (event.keyCode === 8 || event.keyCode === 46) {
+            var secretWord = window.APP.MODEL.CURRENT_WORD;
+            var removedAlphabetText = window.APP.MODEL.RESULT_WORD = removedAlphabetEle.val().toUpperCase();
+            var lastAlphabetTyped = removedAlphabetText.length - 1 >= 0 ? removedAlphabetText[removedAlphabetText.length - 1].toUpperCase() : '';
+            var remainingWord = removedAlphabetText.length - 1 >= 0 ? removedAlphabetText.substr(0, removedAlphabetText.length - 1) : lastAlphabetTyped;
+
+            // Check If Balloon creating is required
+            var secretWordObjCount = window.UTIL.wordCount(secretWord.toUpperCase());
+            var remainingWordObjCount = window.UTIL.wordCount(remainingWord.toUpperCase());
+            if ((lastAlphabetTyped && secretWordObjCount[lastAlphabetTyped] > remainingWordObjCount[lastAlphabetTyped]) ||
+                (lastAlphabetTyped && !remainingWordObjCount[lastAlphabetTyped] )) {
+                // If yes then create Balloon
+                window.APP.MODEL.UI_ALPHABET_LIST.push(new window.APP.VIEW.createBalloon(lastAlphabetTyped));
+            }
+        }
+    };
+    txtRemovedAlphabet.addEventListener('keydown', window.APP.CONTROLLER.alphabetBeforeEnter);
+
 
     // Loading JSON
-    $.getJSON('js/words.json',function(words){
+    $.getJSON('js/words.json', function (words) {
         window.APP.MODEL.WORD_LIST = words.words;
 
         window.APP.CONTROLLER.init();
